@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package netutil;
+option java_package = "com.github.m5.netutil.rpc.proto";
+option java_outer_classname = "YrpcProtos";
+
+message YrpcRequest {
+    string request_id = 1;
+    string group = 2;
+    string version = 3;
+    string interface_name = 4;
+    string method_name = 5;
+    repeated bytes params = 6;
+}
+
+message YrpcResponse {
+    string request_id = 1;
+    bytes result = 2;
+    string err_msg = 3;
+}
+//执行命令: ..\util\protoc.exe  yrpc_meta.proto --java_out .
+
