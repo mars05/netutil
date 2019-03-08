@@ -1,0 +1,12 @@
+host: 10.1.7.11
+port: 6379
+minIdle: 10
+maxIdle: 20
+maxTotal: 500
+maxWaitMillis: 5000
+minEvictableIdleTimeMillis: 60000
+timeBetweenEvictionRunsMillis: 30000
+testWhileIdle: true
+testOnBorrow: false
+testOnReturn: false
+
