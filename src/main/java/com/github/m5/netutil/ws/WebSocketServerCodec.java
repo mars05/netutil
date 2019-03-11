@@ -37,7 +37,6 @@ public final class WebSocketServerCodec extends ChannelInitializer<SocketChannel
         ch.pipeline().addLast(new IdleStateHandler(0, 0, 300));
         ch.pipeline().addLast("httpCodec", new HttpServerCodec())
                 .addLast("aggregator", new HttpObjectAggregator(65536))
-                // ChunkedWriteHandler：向客户端发送HTML5文件，ChunkedWriteHandler分块写处理，文件过大会将内存撑爆
                 .addLast("chunkedWriteHandler", new ChunkedWriteHandler())
                 .addLast("fullHttpRequestHandler", new ChannelDuplexHandler() {
                     @Override
