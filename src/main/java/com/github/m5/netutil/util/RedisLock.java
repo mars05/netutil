@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
@@ -28,12 +29,11 @@ public class RedisLock implements Lock, Serializable {
      * EX|PX, expire time units: EX = seconds; PX = milliseconds
      */
     private static final String SET_WITH_EXPIRE_TIME = "EX";
-    private ThreadLocal<String> lockValueHolder = new ThreadLocal<>();
+    private ThreadLocal<ReentrantFlag> lockValueHolder = new ThreadLocal<>();
     private Jedis jedis;
     private JedisPool jedisPool;
     private String lockKey;
     private int seconds;
-
 
     public RedisLock(Jedis jedis, String lockKey, int expxSeconds) {
         this.jedis = jedis;
@@ -51,12 +51,13 @@ public class RedisLock implements Lock, Serializable {
     public void lock() {
         try {
             if (lockValueHolder.get() == null) {
-                lockValueHolder.set(generateLockValue());
+                lockValueHolder.set(new ReentrantFlag(generateLockValue()));
             } else {
+                lockValueHolder.get().getReentrantCounter().getAndIncrement();
                 return;
             }
             int lookupIntervalMillis = 50;
-            while (!LOCK_SUCCESS.equalsIgnoreCase(getResource().set(lockKey, lockValueHolder.get(), SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, seconds))) {
+            while (!LOCK_SUCCESS.equalsIgnoreCase(getResource().set(lockKey, lockValueHolder.get().getLockValue(), SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, seconds))) {
                 try {
                     Thread.sleep(lookupIntervalMillis);
                 } catch (InterruptedException e) {
@@ -77,17 +78,17 @@ public class RedisLock implements Lock, Serializable {
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public boolean tryLock() {
         if (lockValueHolder.get() == null) {
             String lockValue = generateLockValue();
             if (LOCK_SUCCESS.equalsIgnoreCase(getResource().set(lockKey, lockValue, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, seconds))) {
-                lockValueHolder.set(lockValue);
+                lockValueHolder.set(new ReentrantFlag(lockValue));
                 return true;
             }
             return false;
         } else {
+            lockValueHolder.get().getReentrantCounter().getAndIncrement();
             return true;
         }
     }
@@ -112,9 +113,10 @@ public class RedisLock implements Lock, Serializable {
                     throw e;
                 }
             }
-            lockValueHolder.set(lockValue);
+            lockValueHolder.set(new ReentrantFlag(lockValue));
             return true;
         } else {
+            lockValueHolder.get().getReentrantCounter().getAndIncrement();
             return true;
         }
     }
@@ -129,10 +131,12 @@ public class RedisLock implements Lock, Serializable {
         if (lockValueHolder.get() == null) {
             throw new IllegalMonitorStateException();
         }
-        String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-        Object result = getResource().eval(script, Collections.singletonList(lockKey), Collections.singletonList(lockValueHolder.get()));
-        lockValueHolder.remove();
-        if (!RELEASE_SUCCESS.equals(result)) {
+        if (0 >= lockValueHolder.get().getReentrantCounter().getAndDecrement()) {
+            String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+            Object result = getResource().eval(script, Collections.singletonList(lockKey), Collections.singletonList(lockValueHolder.get().getLockValue()));
+            lockValueHolder.remove();
+            if (!RELEASE_SUCCESS.equals(result)) {
+            }
         }
     }
 
@@ -149,6 +153,23 @@ public class RedisLock implements Lock, Serializable {
             return jedisPool.getResource();
         }
         throw new NullPointerException();
+    }
+
+    class ReentrantFlag {
+        private String lockValue;
+        private AtomicInteger reentrantCounter = new AtomicInteger();
+
+        public ReentrantFlag(String lockValue) {
+            this.lockValue = lockValue;
+        }
+
+        public AtomicInteger getReentrantCounter() {
+            return reentrantCounter;
+        }
+
+        public String getLockValue() {
+            return lockValue;
+        }
     }
 
     private String generateLockValue() {
