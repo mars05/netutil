@@ -2,6 +2,7 @@ package ws;
 
 import ch.qos.logback.classic.Level;
 import com.github.m5.netutil.util.LogLevelUtils;
+import com.github.m5.netutil.util.SSLUtils;
 import com.github.m5.netutil.ws.WebSocketChannel;
 import com.github.m5.netutil.ws.WebSocketRequestHandler;
 import com.github.m5.netutil.ws.WebSocketServer;
@@ -18,8 +19,7 @@ public class ChatServerTest {
 
     public static void main(String[] args) {
         LogLevelUtils.setRootLevel(Level.INFO);
-
-        WebSocketServer server = new WebSocketServer(2222, new WebSocketRequestHandler() {
+        WebSocketServer server = new WebSocketServer(2222, SSLUtils.createSSLContext(ClassLoader.getSystemResourceAsStream("test.pfx"), null, "7hukgn0h"), new WebSocketRequestHandler() {
             @Override
             public void onOpen(WebSocketChannel webSocketChannel) {
                 LOG.info("建立连接: {},", webSocketChannel, getWebSocketChannels().size());
@@ -56,8 +56,9 @@ public class ChatServerTest {
             }
         });
         System.out.println("启动结果：" + server.isOpen());
-        if (new Scanner(System.in).nextLine() != null) {
+        while (new Scanner(System.in).nextLine() != null) {
             System.out.println(server.getClientChannelMap().size());
+            System.out.println(server.isSSL());
         }
     }
 }

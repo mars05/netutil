@@ -4,8 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.github.m5.netutil.rpc.YrpcServer;
 import com.github.m5.netutil.rpc.config.ServerConfig;
 import com.github.m5.netutil.util.LogLevelUtils;
-
-import java.util.Scanner;
+import com.github.m5.netutil.util.SSLUtils;
 
 /**
  * @author xiaoyu
@@ -18,7 +17,7 @@ public class RpcServerTest {
         config.addService(HelloService.class.getName(), new HelloServiceImpl());
         config.addService(GreetingService.class.getName(), new GreetingServiceImpl());
 
-        YrpcServer yrpcServer = new YrpcServer(1111, config);
+        YrpcServer yrpcServer = new YrpcServer(1111, SSLUtils.createSSLContext(ClassLoader.getSystemResourceAsStream("test.pfx"), null, "7hukgn0h"), config);
 
         System.out.println("启动结果：" + yrpcServer.isOpen());
 

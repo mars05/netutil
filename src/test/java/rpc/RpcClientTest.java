@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.github.m5.netutil.rpc.ServiceProxyFactory;
 import com.github.m5.netutil.rpc.YrpcClient;
 import com.github.m5.netutil.util.LogLevelUtils;
+import com.github.m5.netutil.util.SSLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ public class RpcClientTest {
     public static void main(String[] args) throws Exception {
         LogLevelUtils.setRootLevel(Level.INFO);
 
-        ServiceProxyFactory serviceProxyFactory = new ServiceProxyFactory(new YrpcClient("127.0.0.1", 1111));
+        ServiceProxyFactory serviceProxyFactory = new ServiceProxyFactory(new YrpcClient("127.0.0.1", 1111, SSLUtils.createSSLContext()));
 
         ExecutorService executorService = Executors.newFixedThreadPool(50);
         HelloService helloService = serviceProxyFactory.newServiceProxy(HelloService.class);
