@@ -14,9 +14,12 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.ssl.SslHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -32,20 +35,25 @@ public abstract class AbstractNettyServer extends AbstractServer {
     private NioEventLoopGroup workerGroup;
     private ServerBootstrap bootstrap;
 
-    protected AbstractNettyServer() {
+    public AbstractNettyServer() {
     }
 
     public AbstractNettyServer(int port) {
         super(port);
     }
 
+    public AbstractNettyServer(int port, SSLContext sslContext) {
+        super(port, sslContext);
+    }
+
     public AbstractNettyServer(String host, int port) {
         super(host, port);
     }
 
-    public AbstractNettyServer(InetSocketAddress bindAddress) {
-        super(bindAddress);
+    public AbstractNettyServer(InetSocketAddress bindAddress, SSLContext sslContext) {
+        super(bindAddress, sslContext);
     }
+
 
     @Override
     protected void doBind() {
@@ -63,6 +71,12 @@ public abstract class AbstractNettyServer extends AbstractServer {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+                        if (getSslContext() != null) {
+                            SSLEngine sslEngine = getSslContext().createSSLEngine();
+                            sslEngine.setUseClientMode(false);
+                            sslEngine.setNeedClientAuth(false);
+                            pipeline.addLast("ssl", new SslHandler(sslEngine));
+                        }
                         pipeline.addLast("codec", (ChannelHandler) getCodec())
                                 .addLast("handler", (ChannelHandler) getHandler());
                     }
@@ -99,10 +113,6 @@ public abstract class AbstractNettyServer extends AbstractServer {
         return channel.isOpen();
     }
 
-    @Override
-    public boolean isSSL() {
-        return false;
-    }
 
     @Override
     public boolean isTransportable() {
