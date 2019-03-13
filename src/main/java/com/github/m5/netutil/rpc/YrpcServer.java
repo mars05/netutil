@@ -6,6 +6,7 @@ import com.github.m5.netutil.rpc.config.ServerConfig;
 import com.github.m5.netutil.server.AbstractNettyServer;
 import com.github.m5.netutil.util.SerializationType;
 
+import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
 
 /**
@@ -17,6 +18,12 @@ public class YrpcServer extends AbstractNettyServer {
 
     public YrpcServer(int port, ServerConfig config) {
         handler.setServerConfig(config);
+        bind(new InetSocketAddress(port));
+    }
+
+    public YrpcServer(int port, SSLContext sslContext, ServerConfig config) {
+        handler.setServerConfig(config);
+        setSslContext(sslContext);
         bind(new InetSocketAddress(port));
     }
 

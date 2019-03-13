@@ -5,6 +5,7 @@ import com.github.m5.netutil.codec.Codec;
 import com.github.m5.netutil.handler.Handler;
 import com.github.m5.netutil.util.SerializationType;
 
+import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
 
 /**
@@ -16,6 +17,10 @@ public class YrpcClient extends AbstractNettyClient {
 
     public YrpcClient(String remoteHost, int remotePort) {
         super(remoteHost, remotePort);
+    }
+
+    public YrpcClient(String remoteHost, int remotePort, SSLContext sslContext) {
+        super(remoteHost, remotePort, sslContext);
     }
 
     public YrpcClient(InetSocketAddress remoteAddress) {
