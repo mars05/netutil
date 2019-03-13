@@ -34,7 +34,7 @@ public final class WebSocketServerCodec extends ChannelInitializer<SocketChannel
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-        ch.pipeline().addLast(new IdleStateHandler(0, 0, 300));
+        ch.pipeline().addLast(new IdleStateHandler(0, 0, 1800));
         ch.pipeline().addLast("httpCodec", new HttpServerCodec())
                 .addLast("aggregator", new HttpObjectAggregator(65536))
                 .addLast("chunkedWriteHandler", new ChunkedWriteHandler())
