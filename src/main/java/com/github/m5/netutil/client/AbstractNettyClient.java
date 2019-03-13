@@ -18,10 +18,13 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.util.NetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Future;
 
@@ -44,6 +47,15 @@ public abstract class AbstractNettyClient extends AbstractClient {
         super(remoteAddress);
     }
 
+    public AbstractNettyClient(String remoteHost, int remotePort, SSLContext sslContext) {
+        super(remoteHost, remotePort, sslContext);
+    }
+
+    public AbstractNettyClient(InetSocketAddress remoteAddress, SSLContext sslContext) {
+        super(remoteAddress, sslContext);
+    }
+
+
     private void initBootstrap() {
         if (null == bootstrap) {
             synchronized (getClass()) {
@@ -60,6 +72,12 @@ public abstract class AbstractNettyClient extends AbstractClient {
                                 @Override
                                 protected void initChannel(SocketChannel ch) throws Exception {
                                     ChannelPipeline pipeline = ch.pipeline();
+                                    if (getSslContext() != null) {
+                                        SSLEngine sslEngine = getSslContext().createSSLEngine();
+                                        sslEngine.setUseClientMode(true);
+                                        sslEngine.setNeedClientAuth(true);
+                                        pipeline.addLast("ssl", new SslHandler(sslEngine));
+                                    }
                                     pipeline.addLast("codec", (ChannelHandler) getCodec())
                                             .addLast("handler", (ChannelHandler) getHandler());
                                 }
@@ -118,11 +136,6 @@ public abstract class AbstractNettyClient extends AbstractClient {
         } catch (Exception e) {
             logger.warn("Failed to close channel", e);
         }
-    }
-
-    @Override
-    public boolean isSSL() {
-        return false;
     }
 
     @Override
