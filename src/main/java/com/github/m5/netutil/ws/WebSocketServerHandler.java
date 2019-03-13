@@ -56,7 +56,7 @@ class WebSocketServerHandler extends AbstractNettyServerHandler {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         WebSocketChannel info = ctx.channel().attr(Constants.WEB_SOCKET_CHANNEL_ATTRIBUTE_KEY).getAndSet(null);
-        if(info==null){
+        if (info == null) {
             return;
         }
         if (info.getCloseStatus() == null) {

@@ -33,6 +33,7 @@ class YrpcServerHandler extends AbstractNettyServerHandler {
         executorService.execute(() -> {
         });
     }
+
     public YrpcServerHandler() {
     }
 
