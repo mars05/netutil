@@ -1,21 +1,11 @@
 netutil
 ========================
 
-一个网络相关的工具包，对Netty进行了一些抽象封装，目前实现了简易的rpc调用和websocket服务端，以后也会陆续添加一些有趣的功能。
+一个网络相关的工具包，对Netty进行了一些抽象封装，实现了一些分布式和网络相关的工具。
 
 
-## 相关用例连接: 
-### 服务端代码:
-
-```java
-public class RpcServerTest {
-    public static void main(String[] args) {
-
-        ServerConfig config = new ServerConfig();
-        config.addService(HelloService.class.getName(), new HelloServiceImpl());
-        config.addService(GreetingService.class.getName(), new GreetingServiceImpl());
-        YrpcServer yrpcServer = new YrpcServer(1111, config);
-        System.out.println("启动结果：" + yrpcServer.isOpen());
-    }
-}
-```
+## 相关用例链接: 
+- ### [RPC调用]()
+- ### [WebSocket服务端]()
+- ### [Redis可重入分布式锁]()
+ 
