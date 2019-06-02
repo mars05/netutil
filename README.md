@@ -5,7 +5,6 @@ netutil
 
 
 ## 相关用例链接: 
-- ### [RPC调用]()
-- ### [WebSocket服务端]()
-- ### [Redis可重入分布式锁]()
- 
+- ### [RPC调用](https://github.com/mars05/netutil/wiki/RPC%E8%B0%83%E7%94%A8)
+- ### [WebSocket服务端](https://github.com/mars05/netutil/wiki/WebSocketServer)
+- ### [Redis可重入分布式锁](https://github.com/mars05/netutil/wiki/RedisLock)
