@@ -8,8 +8,7 @@ import com.github.m5.netutil.util.SSLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
 /**
  * @author xiaoyu
@@ -20,22 +19,22 @@ public class RpcClientTest {
     public static void main(String[] args) throws Exception {
         LogLevelUtils.setRootLevel(Level.INFO);
 
-        ServiceProxyFactory serviceProxyFactory = new ServiceProxyFactory(new YrpcClient("127.0.0.1", 1111, SSLUtils.createSSLContext()));
+        //定义客户端
+        YrpcClient yrpcClient = new YrpcClient("127.0.0.1", 1111, SSLUtils.createSSLContext());
 
-        ExecutorService executorService = Executors.newFixedThreadPool(50);
+        //定义服务代理工厂，用于生成RPC服务消费者
+        ServiceProxyFactory serviceProxyFactory = new ServiceProxyFactory(yrpcClient);
+        //生成RPC服务消费者
         HelloService helloService = serviceProxyFactory.newServiceProxy(HelloService.class);
         GreetingService greetingService = serviceProxyFactory.newServiceProxy(GreetingService.class);
 
-        for (int i = 0; i < 10000; i++) {
-            executorService.execute(() -> {
-                String rs = helloService.sayHi("张三", 123);
-                greetingService.a("a李四");
-                String b = greetingService.b("b王五");
-                String c = greetingService.c();
-                greetingService.d();
-                System.out.println(rs + "," + b + "," + c);
-            });
-        }
-
+        IntStream.range(0, 100).parallel().forEach(value -> {
+            String rs = helloService.sayHi("张三", 123);
+            greetingService.a("a李四");
+            String b = greetingService.b("b王五");
+            String c = greetingService.c();
+            greetingService.d();
+            System.out.println(rs + "," + b + "," + c);
+        });
     }
 }

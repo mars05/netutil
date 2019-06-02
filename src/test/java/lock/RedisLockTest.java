@@ -12,7 +12,8 @@ import java.util.concurrent.locks.Lock;
 public class RedisLockTest {
 
     public static void main(String[] args) throws Exception {
-        Lock lock = new RedisLock(RedisConfig.loadByResource().newJedisPool(), "LOCK_KEY_TEST", 5);
+        JedisPool jedisPool = RedisConfig.loadByResource().newJedisPool();
+        Lock lock = new RedisLock(jedisPool, "LOCK_KEY_TEST", 5);
         new Thread(() -> {
             lock.lock();
             System.out.println("1111获得锁");

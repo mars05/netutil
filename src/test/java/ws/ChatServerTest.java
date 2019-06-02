@@ -2,14 +2,11 @@ package ws;
 
 import ch.qos.logback.classic.Level;
 import com.github.m5.netutil.util.LogLevelUtils;
-import com.github.m5.netutil.util.SSLUtils;
 import com.github.m5.netutil.ws.WebSocketChannel;
 import com.github.m5.netutil.ws.WebSocketRequestHandler;
 import com.github.m5.netutil.ws.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Scanner;
 
 /**
  * @author xiaoyu
@@ -19,7 +16,9 @@ public class ChatServerTest {
 
     public static void main(String[] args) {
         LogLevelUtils.setRootLevel(Level.INFO);
-        WebSocketServer server = new WebSocketServer(2222, SSLUtils.createSSLContext(ClassLoader.getSystemResourceAsStream("test.pfx"), null, "7hukgn0h"), new WebSocketRequestHandler() {
+//        SSLContext ssl = SSLUtils.createSSLContext(ClassLoader.getSystemResourceAsStream("test.pfx"), null, "7hukgn0h");
+
+        WebSocketServer server = new WebSocketServer(2222, new WebSocketRequestHandler() {
             @Override
             public void onOpen(WebSocketChannel webSocketChannel) {
                 LOG.info("建立连接: {},", webSocketChannel, getWebSocketChannels().size());
@@ -55,10 +54,8 @@ public class ChatServerTest {
                 LOG.error("发生异常: {}", webSocketChannel, throwable);
             }
         });
+
         System.out.println("启动结果：" + server.isOpen());
-        while (new Scanner(System.in).nextLine() != null) {
-            System.out.println(server.getClientChannelMap().size());
-            System.out.println(server.isSSL());
-        }
+
     }
 }
